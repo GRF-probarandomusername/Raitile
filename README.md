@@ -60,4 +60,5 @@ We aim to prioritize meaningful updates over frequent releases. Security fixes, 
 
 A license is a legal document that tells you how you can use someone else's work.
 Raitile is licensed under the GNU General Public License v3.0 (GPLv3).
+
 Thanks for supporting us!

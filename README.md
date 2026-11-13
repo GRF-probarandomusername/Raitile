@@ -11,6 +11,7 @@ Raitile is an all-in-one app store that aims to centralize everything useful to 
 - Tools like Blender
 - A built-in game engine supporting the latest graphics APIs like DirectX 12 Ultimate and technologies like FSR and DLSS
 - Multiple compatibility layers (Windows to Linux, Linux to Windows, etc.)
+- And more!
 All of this is meant to let developers focus on just one thing: building their games.
 
 

@@ -57,6 +57,7 @@ except Exception as e:
         # Logging
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
                 f.write(f"[{current_time}] Error : {e}\n")
+                sys.exit(1)
     except Exception as log_error: # log has failed, nothing
         print(f"{ORANGE}WARNING : log failed : {log_error}{RESET}")
         sys.exit(1)

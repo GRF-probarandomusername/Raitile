@@ -50,7 +50,7 @@ Every bit of support counts!
 ## Project Status and Development Philosophy
 
 Raitile is currently in its early planning stage.
-No functional product has been released yet.
+No functional product has been released yet but Raitile is actively developed. 
 We aim to prioritize meaningful updates over frequent releases. Security fixes, important optimizations, and highly requested quality-of-life improvements should take priority over minor changes that bring little noticeable value.
 
 **The project is being developed gradually, with feedback from the community helping shape its direction.**

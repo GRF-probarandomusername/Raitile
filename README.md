@@ -10,7 +10,7 @@ Raitile is an ecosystem of independent programs designed to simplify game develo
 The programs are:
 - Raitile ... (to name) a tool that simplifies transferring assets between programs.
 - Raitile ... (to name) a lightweight launcher that brings everything together in one place.
-- Raitile ... (to name) an open-source application store that lets developers publish and update their games, choose how much of their net revenue they want to share with Raitile (with a minimum commission of 2%), and change that percentage whenever they want.
+- Raitile Shop an open-source application store that lets developers publish and update their games, choose how much of their net revenue they want to share with Raitile (with a minimum commission of 2%), and change that percentage whenever they want.
   
 **Each program can be used independently.**
 

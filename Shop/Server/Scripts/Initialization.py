@@ -41,8 +41,9 @@ except Exception as e:
         # Logging
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
                 f.write(f"[{current_time}] Error : {e}\n")
-    except: # log error, pass
-        exit()
+    except: # log has failed, nothing
+        print("log failed")
+        sys.exit(1)
 
 
 else:

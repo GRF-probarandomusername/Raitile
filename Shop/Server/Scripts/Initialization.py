@@ -11,7 +11,7 @@ today_date = datetime.today().strftime("%Y-%m-%d")
 current_time = datetime.now().strftime("%H:%M:%S")
 logs_file_name_and_location = parent_dir / "logs" / f"logs_{today_date}.txt"
 # Definition
-def bip_erreur():
+def bip_error():
     bip = (b'\x00' * 10 + b'\xff' * 10) * 80
     fin = time.time() + 5
 
@@ -36,7 +36,7 @@ try:
         f.write(f"[{current_time}] Initialization completed.\n")
 except Exception as e:
     print(f"[{current_time}]Error during initialisation : {e}")
-    bip_erreur()
+    bip_error()
     try:
         # Logging
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:

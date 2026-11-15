@@ -1,0 +1,20 @@
+cat << 'EOF' > .gitignore
+*.key
+*.pem
+Org private key/
+generated_certs/
+Shop/Server/Public/
+Shop/Server/assets/
+Shop/Server/Config/
+Shop/Server/logs/
+Shop/Server/database/
+Shop/Server/Stock/
+Shop/Server/certs/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.vscode/
+.DS_Store
+EOF
+

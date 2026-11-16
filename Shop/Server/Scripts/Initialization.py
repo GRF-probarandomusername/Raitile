@@ -37,10 +37,10 @@ def bip_error():
         pause = 0.8 - (time.time() - debut_cycle)
         if pause > 0:
             time.sleep(pause)
-
+# Get current time
 def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+# chose the next available crash log path
 def next_crash_log_path():
     crash_log_id = 1
     while True:
@@ -48,9 +48,9 @@ def next_crash_log_path():
         if not candidate.exists():
             return candidate
         crash_log_id += 1
-
+# define the location for the next crash log file
 Stack_trace_location = next_crash_log_path()
-
+# define a function to write the stack trace to the appropriate log files
 def writing_stack_trace(crash):
     if crash == True:
         with open(Stack_trace_location, "a", encoding="utf-8") as f:
@@ -60,18 +60,31 @@ def writing_stack_trace(crash):
     else:
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
             f.write("".join(stack_trace))
-
+# main execution
 if __name__ == "__main__":
     try:
         # Creating folders & permissions
         for folder in public_folders:
-            (parent_dir / folder).mkdir(exist_ok=True, parents=True)
-            stack_trace.append(f"[{now()}] Created public folder: {folder}\n")
+            folder_path = parent_dir / folder
+            folder_already_exists = folder_path.is_dir()
+            folder_path.mkdir(exist_ok=True, parents=True)
+            if folder_already_exists:
+                warning = f"[{now()}] WARNING : Public folder already exists: {folder}\n"
+                print(f"{ORANGE}{warning.rstrip()}{RESET}")
+                stack_trace.append(warning)
+            else:
+                stack_trace.append(f"[{now()}] Created public folder: {folder}\n")
 
         for folder in private_folders:
             folder_path = parent_dir / folder
+            folder_already_exists = folder_path.is_dir()
             folder_path.mkdir(exist_ok=True, parents=True)
-            stack_trace.append(f"[{now()}] Created private folder: {folder}\n")
+            if folder_already_exists:
+                warning = f"[{now()}] WARNING : Private folder already exists: {folder}\n"
+                print(f"{ORANGE}{warning.rstrip()}{RESET}")
+                stack_trace.append(warning)
+            else:
+                stack_trace.append(f"[{now()}] Created private folder: {folder}\n")
             if os.name != "nt":
                 os.chmod(folder_path, 0o700)
 
@@ -91,15 +104,16 @@ if __name__ == "__main__":
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
             f.write(f"[{now()}] Initialization completed.\n")
             stack_trace.append(f"[{now()}] Initialization completed.\n")
-
+    # except (error) as e:
     except Exception as e:
         print(f"{RED}[{now()}] Error during initialisation : {e}{RESET}")
         stack_trace.append(f"[{now()}] Error during initialisation : {e}\n")
         try:
             bip_error()
             stack_trace.append(f"[{now()}] Audio notification sent.\n")
+        # try to write in the logs file that the audio notification failed
         except Exception as audio_error:
-            print(f"{ORANGE}[{now()}] WARNING : Audio notification failed{RESET}")
+            print(f"{ORANGE}[{now()}] WARNING : Audio notification failed : {audio_error}{RESET}")
             stack_trace.append(f"[{now()}] WARNING : Audio notification failed : {audio_error}\n")
             try:
                 with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
@@ -136,5 +150,5 @@ if __name__ == "__main__":
     else:
         print(f"{GREEN}[{now()}] Successfully Initialized Raitile Shop (Server Side){RESET}")
         stack_trace.append(f"[{now()}] Initialization completed successfully.\n")
-        stack_trace.append(f"[{now()}] ------------------------------ Initialization Trace completed ------------------------------\n")
+        stack_trace.append(f"------------------------------ Initialization Trace completed ------------------------------\n")
         writing_stack_trace(crash=False)

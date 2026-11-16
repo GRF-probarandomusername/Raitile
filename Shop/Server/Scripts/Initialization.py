@@ -14,7 +14,7 @@ private_folders = ["Config", "logs", "database", "Stock", "certs"]
 required_certs = ["ca.crt", "server.crt", "server.key"]
 today_date = datetime.today().strftime("%Y-%m-%d")
 logs_file_name_and_location = parent_dir / "logs" / f"logs_{today_date}.txt"
-stack_trace = ["----------------------------------Begin Stack Trace--------------------------------\n"]
+stack_trace = ["------------------------------- Begin Stack Trace -----------------------------------------\n"]
 
 # Colors
 RESET = "\033[0m"
@@ -125,6 +125,7 @@ if __name__ == "__main__":
                 print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
                 print(f"{YELLOW}[{now()}] If the problem persists, please contact support.{RESET}")
                 print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
+                stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
                 print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
 
         try:
@@ -135,20 +136,21 @@ if __name__ == "__main__":
             print(f"{ORANGE}[{now()}] WARNING : log failed : {log_error}{RESET}")
             print(f"{YELLOW}[{now()}] Stack trace cannot be written !{RESET}")
             print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
-            print(f"{YELLOW}[{now()}] If the problem persists, please contact support.{RESET}")
             print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
+            stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
             print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
         stack_trace.append(f"[{now()}] Exiting with error code 1\n")
         stack_trace.append(f"[{now()}] Stack trace written to {Stack_trace_location}\n")
-        stack_trace.append("----------------------------------Ending Stack Trace-------------------------------\n")
+        stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
         writing_stack_trace(crash=True)
         print(f"{RED}[{now()}] Exiting with error code 1{RESET}")
         print(f"{YELLOW}[{now()}] Stack trace(the most important part) :{RESET}")
+        stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
         print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
         sys.exit(1)
 
     else:
         print(f"{GREEN}[{now()}] Successfully Initialized Raitile Shop (Server Side){RESET}")
         stack_trace.append(f"[{now()}] Initialization completed successfully.\n")
-        stack_trace.append(f"------------------------------ Initialization Trace completed ------------------------------\n")
+        stack_trace.append(f"------------------------------ Initialization Trace Ended ----------------------------------\n")
         writing_stack_trace(crash=False)

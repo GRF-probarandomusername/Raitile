@@ -1,4 +1,4 @@
-""" Initialization """
+""" Initialization"""
 # Imports
 from pathlib import Path
 from datetime import datetime
@@ -21,7 +21,7 @@ private_folders = ["Config", "logs", "database", "Stock", "certs"]
 required_certs = ["ca.crt", "server.crt", "server.key"]
 today_date = datetime.today().strftime("%Y-%m-%d")
 logs_file_name_and_location = parent_dir / "logs" / f"logs_{today_date}.txt"
-stack_trace = ["------------------------------- Begin Stack Trace -----------------------------------------\n"]
+init_stack_trace = ["------------------------------- Begin Stack Trace -----------------------------------------\n"]
 
 # Terminal colors
 RESET = "\033[0m"
@@ -72,12 +72,12 @@ Stack_trace_location = next_crash_log_path()
 def writing_stack_trace(crash):
     if crash == True:
         with open(Stack_trace_location, "a", encoding="utf-8") as f:
-            f.write("".join(stack_trace))
+            f.write("".join(init_stack_trace))
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
-            f.write("".join(stack_trace))
+            f.write("".join(init_stack_trace))
     else:
         with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
-            f.write("".join(stack_trace))
+            f.write("".join(init_stack_trace))
 
 
 # Verify the authenticity of the certificates.
@@ -142,7 +142,7 @@ def verify_certificates():
 # Main execution
 if __name__ == "__main__":
     try:
-        stack_trace.append(
+        init_stack_trace.append(
             f"[{ErrorCode.INITIALIZATION_STARTED.value}] [{now()}] Initialization started.\n"
         )
         # Creating folders & permissions
@@ -167,9 +167,9 @@ if __name__ == "__main__":
                     f"WARNING: Public folder already exists: {folder}\n"
                 )
                 print(f"{ORANGE}{warning.rstrip()}{RESET}")
-                stack_trace.append(warning)
+                init_stack_trace.append(warning)
             else:
-                stack_trace.append(
+                init_stack_trace.append(
                     f"[{ErrorCode.FOLDER_CREATED.value}] [{now()}] "
                     f"Created public folder: {folder}\n"
                 )
@@ -195,9 +195,9 @@ if __name__ == "__main__":
                     f"WARNING: Private folder already exists: {folder}\n"
                 )
                 print(f"{ORANGE}{warning.rstrip()}{RESET}")
-                stack_trace.append(warning)
+                init_stack_trace.append(warning)
             else:
-                stack_trace.append(
+                init_stack_trace.append(
                     f"[{ErrorCode.FOLDER_CREATED.value}] [{now()}] "
                     f"Created private folder: {folder}\n"
                 )
@@ -236,9 +236,9 @@ if __name__ == "__main__":
         try:
             verify_certificates()
         except ServerError as certificate_error:
-            stack_trace.append(f"[{now()}] {certificate_error}\n")
+            init_stack_trace.append(f"[{now()}] {certificate_error}\n")
             raise
-        stack_trace.append(
+        init_stack_trace.append(
             f"[{ErrorCode.CERTIFICATES_VERIFIED.value}] [{now()}] "
             "Security certificates verified successfully.\n"
         )
@@ -252,7 +252,7 @@ if __name__ == "__main__":
                 ErrorCode.LOG_WRITE_FAILED,
                 f"Could not write to {logs_file_name_and_location}: {error}",
             ) from error
-        stack_trace.append(
+        init_stack_trace.append(
             f"[{ErrorCode.INITIALIZATION_COMPLETED.value}] [{now()}] "
             "Initialization completed.\n"
         )
@@ -262,24 +262,24 @@ if __name__ == "__main__":
         else:
             error_message = f"[{ErrorCode.INITIALIZATION_FAILED.value}] {e}"
         print(f"{RED}[{now()}] Initialization error: {error_message}{RESET}")
-        stack_trace.append(f"[{now()}] Initialization error: {error_message}\n")
+        init_stack_trace.append(f"[{now()}] Initialization error: {error_message}\n")
         try:
             if bip_error():
-                stack_trace.append(f"[{now()}] Audio notification sent.\n")
+                init_stack_trace.append(f"[{now()}] Audio notification sent.\n")
             else:
                 warning = (
                     f"[{ErrorCode.AUDIO_NOTIFICATION_FAILED.value}] [{now()}] "
                     "WARNING: Audio notification unavailable (aplay not found).\n"
                 )
                 print(f"{ORANGE}{warning.rstrip()}{RESET}")
-                stack_trace.append(warning)
+                init_stack_trace.append(warning)
         except Exception as audio_error:
             warning = (
                 f"[{ErrorCode.AUDIO_NOTIFICATION_FAILED.value}] [{now()}] "
                 f"WARNING: Audio notification failed: {audio_error}\n"
             )
             print(f"{ORANGE}{warning.rstrip()}{RESET}")
-            stack_trace.append(warning)
+            init_stack_trace.append(warning)
             try:
                 with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
                     f.write(warning)
@@ -292,8 +292,8 @@ if __name__ == "__main__":
                 print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
                 print(f"{YELLOW}[{now()}] If the problem persists, please contact support.{RESET}")
                 print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
-                stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
-                print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
+                init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
+                print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
 
         try:
             with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
@@ -306,10 +306,10 @@ if __name__ == "__main__":
             print(f"{YELLOW}[{now()}] Stack trace cannot be written !{RESET}")
             print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
             print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
-            stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
-            print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
-        stack_trace.append(f"[{now()}] Exiting with status code 1.\n")
-        stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
+            init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
+            print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
+        init_stack_trace.append(f"[{now()}] Exiting with status code 1.\n")
+        init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
         try:
             writing_stack_trace(crash=True)
         except OSError as log_error:
@@ -319,7 +319,7 @@ if __name__ == "__main__":
             )
         print(f"{RED}[{now()}] Exiting with status code 1{RESET}")
         print(f"{YELLOW}[{now()}] Stack trace(the most important part) :{RESET}")
-        print(f"{YELLOW}{''.join(stack_trace)}{RESET}")
+        print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
         sys.exit(1)
 
     else:
@@ -327,7 +327,7 @@ if __name__ == "__main__":
             f"{GREEN}[{ErrorCode.INITIALIZATION_COMPLETED.value}] [{now()}] "
             f"Successfully initialized Raitile Shop (Server Side){RESET}"
         )
-        stack_trace.append(f"------------------------------ Initialization Trace Ended ----------------------------------\n")
+        init_stack_trace.append(f"------------------------------ Initialization Trace Ended ----------------------------------\n")
         try:
             writing_stack_trace(crash=False)
         except OSError as log_error:

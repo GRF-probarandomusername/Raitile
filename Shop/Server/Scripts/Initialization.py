@@ -21,6 +21,8 @@ private_folders = ["Config", "logs", "database", "Stock", "certs"]
 required_certs = ["ca.crt", "server.crt", "server.key"]
 today_date = datetime.today().strftime("%Y-%m-%d")
 logs_file_name_and_location = parent_dir / "logs" / f"logs_{today_date}.txt"
+# Temporarily disable log and crash-log file writes.
+FILE_LOGGING_ENABLED = False  # Python logging is temporary: since the main thread will be run by a Go application, this variable stops Python from writing logs to avoid file corruption. Eventually, Python won't log at all.
 init_stack_trace = ["------------------------------- Begin Stack Trace -----------------------------------------\n"]
 
 # Terminal colors
@@ -70,6 +72,8 @@ Stack_trace_location = next_crash_log_path()
 
 
 def writing_stack_trace(crash):
+    if not FILE_LOGGING_ENABLED:
+        return
     if crash == True:
         with open(Stack_trace_location, "a", encoding="utf-8") as f:
             f.write("".join(init_stack_trace))
@@ -112,35 +116,44 @@ def verify_certificates():
             f"Could not load the server certificate and private key: {error}",
         ) from error
 
-    # Check that the certificate is trusted by the configured CA for server use.
-    try:
-        result = subprocess.run(
-            [
-                "openssl", "verify", "-purpose", "sslserver",
-                "-CAfile", str(ca_cert_path), str(server_cert_path),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except FileNotFoundError as error:
-        raise ServerError(
-            ErrorCode.OPENSSL_NOT_FOUND,
-            "OpenSSL is required to verify the server certificate.",
-        ) from error
+    # Mutual TLS uses this certificate for both server and client authentication.
+    for purpose in ("sslserver", "sslclient"):
+        try:
+            result = subprocess.run(
+                [
+                    "openssl", "verify", "-purpose", purpose,
+                    "-CAfile", str(ca_cert_path), str(server_cert_path),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        except FileNotFoundError as error:
+            raise ServerError(
+                ErrorCode.OPENSSL_NOT_FOUND,
+                "OpenSSL is required to verify the server certificate.",
+            ) from error
 
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        raise ServerError(
-            ErrorCode.CERTIFICATE_CHAIN_INVALID,
-            f"Server certificate verification failed: {detail}",
-        )
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout).strip()
+            raise ServerError(
+                ErrorCode.CERTIFICATE_CHAIN_INVALID,
+                f"Certificate verification for {purpose} failed: {detail}",
+            )
 
     return True
 
 
 # Main execution
-if __name__ == "__main__":
+def run_initialization() -> bool:
+    """Initialize the server and return whether it is ready to run."""
+    global Stack_trace_location
+    Stack_trace_location = next_crash_log_path()
+    init_stack_trace.clear()
+    init_stack_trace.append(
+        "------------------------------- Begin Stack Trace -----------------------------------------\n"
+    )
+
     try:
         init_stack_trace.append(
             f"[{ErrorCode.INITIALIZATION_STARTED.value}] [{now()}] Initialization started.\n"
@@ -243,15 +256,15 @@ if __name__ == "__main__":
             "Security certificates verified successfully.\n"
         )
 
-        # Logging
-        try:
-            with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
-                f.write(f"[{now()}] Initialization completed.\n")
-        except OSError as error:
-            raise ServerError(
-                ErrorCode.LOG_WRITE_FAILED,
-                f"Could not write to {logs_file_name_and_location}: {error}",
-            ) from error
+        if FILE_LOGGING_ENABLED:
+            try:
+                with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
+                    f.write(f"[{now()}] Initialization completed.\n")
+            except OSError as error:
+                raise ServerError(
+                    ErrorCode.LOG_WRITE_FAILED,
+                    f"Could not write to {logs_file_name_and_location}: {error}",
+                ) from error
         init_stack_trace.append(
             f"[{ErrorCode.INITIALIZATION_COMPLETED.value}] [{now()}] "
             "Initialization completed.\n"
@@ -280,34 +293,25 @@ if __name__ == "__main__":
             )
             print(f"{ORANGE}{warning.rstrip()}{RESET}")
             init_stack_trace.append(warning)
+            if FILE_LOGGING_ENABLED:
+                try:
+                    with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
+                        f.write(warning)
+                except OSError as log_error:
+                    print(
+                        f"{ORANGE}[{ErrorCode.LOG_WRITE_FAILED.value}] "
+                        f"WARNING: Could not write warning to log: {log_error}{RESET}"
+                    )
+
+        if FILE_LOGGING_ENABLED:
             try:
                 with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
-                    f.write(warning)
-            except Exception as log_error:
+                    f.write(f"[{now()}] {error_message}\n")
+            except OSError as log_error:
                 print(
                     f"{ORANGE}[{ErrorCode.LOG_WRITE_FAILED.value}] "
-                    f"WARNING: Could not write warning to log: {log_error}{RESET}"
+                    f"Could not write initialization error to log: {log_error}{RESET}"
                 )
-                print(f"{YELLOW}[{now()}] Stack trace cannot be written !{RESET}")
-                print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
-                print(f"{YELLOW}[{now()}] If the problem persists, please contact support.{RESET}")
-                print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
-                init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
-                print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
-
-        try:
-            with open(logs_file_name_and_location, "a", encoding="utf-8") as f:
-                f.write(f"[{now()}] {error_message}\n")
-        except Exception as log_error:
-            print(
-                f"{ORANGE}[{ErrorCode.LOG_WRITE_FAILED.value}] "
-                f"Could not write initialization error to log: {log_error}{RESET}"
-            )
-            print(f"{YELLOW}[{now()}] Stack trace cannot be written !{RESET}")
-            print(f"{YELLOW}[{now()}] Please check the permissions of the logs folder and try again.{RESET}")
-            print(f"{YELLOW}[{now()}] Giving stack trace :{RESET}")
-            init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
-            print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
         init_stack_trace.append(f"[{now()}] Exiting with status code 1.\n")
         init_stack_trace.append("--------------------------------- Ending Stack Trace ------------------------------\n")
         try:
@@ -320,7 +324,7 @@ if __name__ == "__main__":
         print(f"{RED}[{now()}] Exiting with status code 1{RESET}")
         print(f"{YELLOW}[{now()}] Stack trace(the most important part) :{RESET}")
         print(f"{YELLOW}{''.join(init_stack_trace)}{RESET}")
-        sys.exit(1)
+        return False
 
     else:
         print(
@@ -335,4 +339,9 @@ if __name__ == "__main__":
                 f"{RED}[{ErrorCode.STACK_TRACE_WRITE_FAILED.value}] "
                 f"Could not write initialization stack trace: {log_error}{RESET}"
             )
-            sys.exit(1)
+            return False
+        return True
+
+
+if __name__ == "__main__":
+    sys.exit(0 if run_initialization() else 1)
